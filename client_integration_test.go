@@ -11,7 +11,7 @@ import (
 var (
 	cacheClient *cache.Client
 	setted      = false
-	key1        = "TestKey1"
+	key1        = "8b06603b-9b0d-4e8c-8aae-10f988639fe6"
 	expires     = 60
 )
 

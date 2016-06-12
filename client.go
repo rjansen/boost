@@ -46,6 +46,9 @@ func Setup(cacheConfig *config.CacheConfig) error {
 
 //NewClient creates a new instance of the cache client component
 func NewClient() *Client {
+	if configuration == nil {
+		configuration = config.BindCacheConfiguration()
+	}
 	client := &Client{
 		Client: memcache.New(configuration.CacheAddress),
 	}
