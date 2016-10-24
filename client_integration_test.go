@@ -1,24 +1,24 @@
-package cache_test
+package cache
 
 import (
-	"testing"
-
-	"farm.e-pedion.com/repo/cache"
-	"farm.e-pedion.com/repo/config"
 	"github.com/stretchr/testify/assert"
+	"os"
+	"testing"
 )
 
 var (
-	cacheClient *cache.Client
+	cacheClient Client
 	setted      = false
 	key1        = "8b06603b-9b0d-4e8c-8aae-10f988639fe6"
 	expires     = 60
 )
 
+func init() {
+	os.Args = append(os.Args, "-ecf", "./test/etc/cache/cache.yaml")
+}
+
 func setup() error {
-	setupErr := cache.Setup(&config.CacheConfig{
-		CacheAddress: "127.0.0.1:11211",
-	})
+	setupErr := Setup()
 	if setupErr != nil {
 		setted = true
 	}
@@ -34,15 +34,15 @@ func before() error {
 	return nil
 }
 
-func Test_NewClient(t *testing.T) {
+func TestNewClient(t *testing.T) {
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
 	}
-	cacheClient = cache.NewClient()
+	cacheClient = NewClient()
 	assert.NotNil(t, cacheClient)
 }
 
-func Test_AddItem(t *testing.T) {
+func TestAddItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
@@ -52,7 +52,7 @@ func Test_AddItem(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_GetItem(t *testing.T) {
+func TestGetItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
@@ -63,7 +63,7 @@ func Test_GetItem(t *testing.T) {
 	assert.NotNil(t, item)
 }
 
-func Test_DelItem(t *testing.T) {
+func TestDelItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
@@ -73,7 +73,7 @@ func Test_DelItem(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func Test_GetEmptyItem(t *testing.T) {
+func TestGetEmptyItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
@@ -84,7 +84,7 @@ func Test_GetEmptyItem(t *testing.T) {
 	assert.Nil(t, item)
 }
 
-func Test_SetItem(t *testing.T) {
+func TestSetItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
