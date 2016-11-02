@@ -1,12 +1,17 @@
 package cache
 
 import (
+	"context"
+	"errors"
 	"farm.e-pedion.com/repo/config"
 	"farm.e-pedion.com/repo/logger"
+	"fmt"
 )
 
 var (
-	configuration *Configuration
+	configuration     *Configuration
+	cacheClientKey    = 30
+	ErrInvalidContext = errors.New("The provided Context is invalid")
 )
 
 //Setup configures the cache package
@@ -28,4 +33,23 @@ type Client interface {
 	Set(key string, expires int, item []byte) error
 	//Delete removes the item associated with the provided key
 	Delete(key string) error
+}
+
+func GetClient(c context.Context) (Client, error) {
+	if c == nil {
+		return nil, ErrInvalidContext
+	}
+	cacheClient, ok := c.Value(cacheClientKey).(Client)
+	if !ok {
+		return nil, fmt.Errorf("ErrInvalidCacheClient client=%+v", cacheClient)
+	}
+	return cacheClient, nil
+}
+
+func SetClient(c context.Context) (context.Context, error) {
+	if c == nil {
+		return nil, ErrInvalidContext
+	}
+	cacheClient := NewClient()
+	return context.WithValue(c, cacheClientKey, cacheClient), nil
 }

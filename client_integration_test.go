@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -92,4 +93,30 @@ func TestSetItem(t *testing.T) {
 
 	err := cacheClient.Set("cache_test", 120, []byte("golang test"))
 	assert.Nil(t, err)
+}
+
+func TestSetGetClientOnContext(t *testing.T) {
+	c := context.Background()
+	c, err := SetClient(c)
+	assert.Nil(t, err)
+	assert.NotZero(t, c)
+
+	client, err := GetClient(c)
+	assert.Nil(t, err)
+	assert.NotZero(t, client)
+}
+
+func TestSetGetClientOnContextErr(t *testing.T) {
+	c, err := SetClient(nil)
+	assert.NotNil(t, err)
+	assert.Zero(t, c)
+
+	client, err := GetClient(c)
+	assert.NotNil(t, err)
+	assert.Zero(t, client)
+
+	c = context.Background()
+	client, err = GetClient(c)
+	assert.NotNil(t, err)
+	assert.Zero(t, client)
 }
