@@ -2,7 +2,8 @@ package memcached
 
 import (
 	"errors"
-	. "farm.e-pedion.com/repo/cache"
+	"farm.e-pedion.com/repo/cache"
+	"farm.e-pedion.com/repo/logger"
 	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -10,8 +11,8 @@ import (
 )
 
 var (
-	cacheClient    = new(MemcachedClient)
-	memcacheClient *GoMemcacheClientMock
+	cacheClient    = new(Client)
+	memcacheClient *CacheMock
 	setted         = false
 	key1           = "8b06603b-9b0d-4e8c-8aae-10f988639fe6"
 	expires        = 60
@@ -19,9 +20,11 @@ var (
 )
 
 func init() {
+	if err := logger.Setup(&logger.Configuration{}); err != nil {
+		panic(err)
+	}
 	testConfig = &Configuration{
-		Provider: "memcached",
-		URL:      "mock://cache",
+		URL: "mock://cache",
 	}
 }
 
@@ -39,8 +42,8 @@ func before() error {
 			return err
 		}
 	}
-	memcacheClient = NewGoMemcacheClientMock()
-	cacheClient.client = memcacheClient
+	memcacheClient = NewCacheMock()
+	cacheClient.cache = memcacheClient
 	return nil
 }
 
@@ -61,6 +64,22 @@ func TestNewClient(t *testing.T) {
 			NewClient()
 		},
 	)
+}
+
+func TestPoolGetClient(t *testing.T) {
+	if beforeErr := before(); beforeErr != nil {
+		assert.Fail(t, beforeErr.Error())
+	}
+	pool, err := cache.GetPool()
+	assert.Nil(t, err)
+	assert.NotNil(t, pool)
+	client, err := pool.Get()
+	assert.Nil(t, err)
+	assert.NotNil(t, client)
+	err = client.Close()
+	assert.Nil(t, err)
+	err = pool.Close()
+	assert.Nil(t, err)
 }
 
 func TestAddItem(t *testing.T) {

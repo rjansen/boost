@@ -5,18 +5,18 @@ import (
 	testify "github.com/stretchr/testify/mock"
 )
 
-//NewGoMemcacheClientMock creates a new mock instance of the cache client component
-func NewGoMemcacheClientMock() *GoMemcacheClientMock {
-	return new(GoMemcacheClientMock)
+//NewCacheMock creates a new mock instance of the cache client component
+func NewCacheMock() *CacheMock {
+	return new(CacheMock)
 }
 
-//GoMemcacheClientMock is a mock client for memcached
-type GoMemcacheClientMock struct {
+//ClientMock is a mock client for memcached
+type CacheMock struct {
 	testify.Mock
 }
 
 //Get reads the value associated with the provided key
-func (m *GoMemcacheClientMock) Get(key string) (*memcache.Item, error) {
+func (m *CacheMock) Get(key string) (*memcache.Item, error) {
 	args := m.Called(key)
 	result := args.Get(0)
 	if result != nil {
@@ -26,19 +26,19 @@ func (m *GoMemcacheClientMock) Get(key string) (*memcache.Item, error) {
 }
 
 //Add inserts a new item in the cache, Add throws error if the provided key was already defined
-func (m *GoMemcacheClientMock) Add(item *memcache.Item) error {
+func (m *CacheMock) Add(item *memcache.Item) error {
 	args := m.Called(item)
 	return args.Error(0)
 }
 
 //Set inserts a new item in the cache if the key is new or modifies the value associated with the provided key
-func (m *GoMemcacheClientMock) Set(item *memcache.Item) error {
+func (m *CacheMock) Set(item *memcache.Item) error {
 	args := m.Called(item)
 	return args.Error(0)
 }
 
 //Delete removes the item associated with the provided key
-func (m *GoMemcacheClientMock) Delete(key string) error {
+func (m *CacheMock) Delete(key string) error {
 	args := m.Called(key)
 	return args.Error(0)
 }

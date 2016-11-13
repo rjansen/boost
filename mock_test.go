@@ -4,6 +4,31 @@ import (
 	testify "github.com/stretchr/testify/mock"
 )
 
+func NewClientPoolMock() *ClientPoolMock {
+	return new(ClientPoolMock)
+}
+
+//ClientPoolMock is a mock for a cache client pool
+type ClientPoolMock struct {
+	testify.Mock
+}
+
+//Get returns a cache Client instance
+func (m *ClientPoolMock) Get() (Client, error) {
+	args := m.Called()
+	result := args.Get(0)
+	if result != nil {
+		return result.(Client), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+//Close finalizes the pool instance
+func (m *ClientPoolMock) Close() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
 //NewClientMock creates a new mock instance of the cache client component
 func NewClientMock() *ClientMock {
 	return new(ClientMock)
@@ -39,5 +64,11 @@ func (m *ClientMock) Set(key string, expires int, item []byte) error {
 //Delete removes the item associated with the provided key
 func (m *ClientMock) Delete(key string) error {
 	args := m.Called(key)
+	return args.Error(0)
+}
+
+//Close finalizes the client instance
+func (m *ClientMock) Close() error {
+	args := m.Called()
 	return args.Error(0)
 }

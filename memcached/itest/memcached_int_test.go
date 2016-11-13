@@ -1,7 +1,6 @@
 package itest
 
 import (
-	. "farm.e-pedion.com/repo/cache"
 	. "farm.e-pedion.com/repo/cache/memcached"
 	"farm.e-pedion.com/repo/config"
 	"github.com/stretchr/testify/assert"
@@ -10,7 +9,7 @@ import (
 )
 
 var (
-	cacheClient Client
+	cacheClient *Client
 	setted      = false
 	key1        = "8b06603b-9b0d-4e8c-8aae-10f988639fe6"
 	expires     = 60
@@ -19,7 +18,7 @@ var (
 
 func init() {
 	os.Args = append(os.Args, "-ecf", "etc/cache/cache.yaml")
-	if err := config.UnmarshalKey("cache", &testConfig); err != nil {
+	if err := config.UnmarshalKey("cache.memcached", &testConfig); err != nil {
 		panic(err)
 	}
 }
