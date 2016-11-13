@@ -1,7 +1,9 @@
-package cache
+package itest
 
 import (
-	"context"
+	. "farm.e-pedion.com/repo/cache"
+	. "farm.e-pedion.com/repo/cache/memcached"
+	"farm.e-pedion.com/repo/config"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -12,14 +14,18 @@ var (
 	setted      = false
 	key1        = "8b06603b-9b0d-4e8c-8aae-10f988639fe6"
 	expires     = 60
+	testConfig  *Configuration
 )
 
 func init() {
-	os.Args = append(os.Args, "-ecf", "./test/etc/cache/cache.yaml")
+	os.Args = append(os.Args, "-ecf", "etc/cache/cache.yaml")
+	if err := config.UnmarshalKey("cache", &testConfig); err != nil {
+		panic(err)
+	}
 }
 
 func setup() error {
-	setupErr := Setup()
+	setupErr := Setup(testConfig)
 	if setupErr != nil {
 		setted = true
 	}
@@ -35,7 +41,7 @@ func before() error {
 	return nil
 }
 
-func TestNewClient(t *testing.T) {
+func TestIntegrationNewClient(t *testing.T) {
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
 	}
@@ -43,80 +49,49 @@ func TestNewClient(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 }
 
-func TestAddItem(t *testing.T) {
+func TestIntegrationAddItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
 	}
-
 	err := cacheClient.Add(key1, expires, []byte("1234567890"))
 	assert.Nil(t, err)
 }
 
-func TestGetItem(t *testing.T) {
+func TestIntegrationGetItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
 	}
-
 	item, err := cacheClient.Get(key1)
 	assert.Nil(t, err)
 	assert.NotNil(t, item)
 }
 
-func TestDelItem(t *testing.T) {
+func TestIntegrationDelItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
 	}
-
 	err := cacheClient.Delete(key1)
 	assert.Nil(t, err)
 }
 
-func TestGetEmptyItem(t *testing.T) {
+func TestIntegrationGetEmptyItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
 	}
-
 	item, err := cacheClient.Get(key1)
 	assert.NotNil(t, err)
 	assert.Nil(t, item)
 }
 
-func TestSetItem(t *testing.T) {
+func TestIntegrationSetItem(t *testing.T) {
 	assert.NotNil(t, cacheClient)
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
 	}
-
 	err := cacheClient.Set("cache_test", 120, []byte("golang test"))
 	assert.Nil(t, err)
-}
-
-func TestSetGetClientOnContext(t *testing.T) {
-	c := context.Background()
-	c, err := SetClient(c)
-	assert.Nil(t, err)
-	assert.NotZero(t, c)
-
-	client, err := GetClient(c)
-	assert.Nil(t, err)
-	assert.NotZero(t, client)
-}
-
-func TestSetGetClientOnContextErr(t *testing.T) {
-	c, err := SetClient(nil)
-	assert.NotNil(t, err)
-	assert.Zero(t, c)
-
-	client, err := GetClient(c)
-	assert.NotNil(t, err)
-	assert.Zero(t, client)
-
-	c = context.Background()
-	client, err = GetClient(c)
-	assert.NotNil(t, err)
-	assert.Zero(t, client)
 }

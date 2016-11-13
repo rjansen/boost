@@ -3,27 +3,37 @@ package cache
 import (
 	"context"
 	"errors"
-	"farm.e-pedion.com/repo/config"
-	"farm.e-pedion.com/repo/logger"
 	"fmt"
 )
 
 var (
-	configuration     *Configuration
+	//Config is the cache package configuraton
+	Config            *Configuration
 	cacheClientKey    = 30
 	ErrInvalidContext = errors.New("The provided Context is invalid")
+	ErrInvalidConfig  = errors.New("The provided Configuration is invalid")
 )
 
 //Setup configures the cache package
-func Setup() error {
-	if err := config.UnmarshalKey("cache", &configuration); err != nil {
-		logger.Error("cache.GetConfigErr", logger.Err(err))
-		return err
+func Setup(config *Configuration) error {
+	if config == nil {
+		return ErrInvalidConfig
 	}
+	Config = config
 	return nil
 }
 
-//Client is a component to interact with a cache system
+//Configuration holds cache connections parameters
+type Configuration struct {
+	Provider string `mapstructure:"provider"`
+	URL      string `mapstructure:"url"`
+}
+
+func (c Configuration) String() string {
+	return fmt.Sprintf("cache.Configuration Provider=%s URL=%v", c.Provider, c.URL)
+}
+
+//Client is an interface to interact with the cache
 type Client interface {
 	//Get reads the value associated with the provided key
 	Get(key string) ([]byte, error)
@@ -46,10 +56,9 @@ func GetClient(c context.Context) (Client, error) {
 	return cacheClient, nil
 }
 
-func SetClient(c context.Context) (context.Context, error) {
+func SetClient(c context.Context, cacheClient Client) (context.Context, error) {
 	if c == nil {
 		return nil, ErrInvalidContext
 	}
-	cacheClient := NewClient()
 	return context.WithValue(c, cacheClientKey, cacheClient), nil
 }

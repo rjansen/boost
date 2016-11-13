@@ -3,16 +3,16 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "i1mo4imi3KPAGsCe0fnScVjPXVU=",
+			"checksumSHA1": "saRdqhwimWjSqWa1TyUQ49i9ZkU=",
 			"path": "farm.e-pedion.com/repo/config",
-			"revision": "b478f1a9179d85eea23d81de34f133ba091c3bdb",
-			"revisionTime": "2016-10-24T00:29:01Z"
+			"revision": "ab4ff23e2ebd055f23af9d4311b088e05c0a2606",
+			"revisionTime": "2016-11-13T00:35:52Z"
 		},
 		{
-			"checksumSHA1": "gqoYIOxu13oWtWm8cr5JGSCJ2hc=",
+			"checksumSHA1": "EmGmgtgX4HjVr3MyH7FUAjhaz5o=",
 			"path": "farm.e-pedion.com/repo/logger",
-			"revision": "63c2944ffd1b11a211bcca35188b84ba81dc110e",
-			"revisionTime": "2016-10-24T01:04:15Z"
+			"revision": "32dcefb295ecd0d71ace56f451b355a4467bf998",
+			"revisionTime": "2016-11-13T00:40:02Z"
 		},
 		{
 			"checksumSHA1": "2avCvSn0XonfApKKuTMyiQmk7s0=",
