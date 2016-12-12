@@ -1,2 +1,2 @@
-# cache
-A simple cache wrapper for redis and memcached
+# boost
+A wrapper for redis and memcached client
