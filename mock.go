@@ -1,4 +1,4 @@
-package cache
+package boost
 
 import (
 	testify "github.com/stretchr/testify/mock"

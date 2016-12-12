@@ -1,14 +1,14 @@
 package memcached
 
 import (
-	"farm.e-pedion.com/repo/logger"
+	"github.com/rjansen/l"
 	"github.com/bradfitz/gomemcache/memcache"
 )
 
 //NewClient creates a new instance of the cache client component
 func NewClient() *Client {
 	if Config == nil {
-		logger.Panic("memcached.Setup never called")
+		l.Panic("memcached.Setup never called")
 	}
 	client := &Client{
 		cache: memcache.New(Config.URL),

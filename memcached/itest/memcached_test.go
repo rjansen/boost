@@ -1,8 +1,8 @@
 package itest
 
 import (
-	. "farm.e-pedion.com/repo/cache/memcached"
-	"farm.e-pedion.com/repo/config"
+	. "github.com/rjansen/boost/memcached"
+	"github.com/rjansen/migi"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -18,7 +18,7 @@ var (
 
 func init() {
 	os.Args = append(os.Args, "-ecf", "etc/cache/cache.yaml")
-	if err := config.UnmarshalKey("cache.memcached", &testConfig); err != nil {
+	if err := migi.UnmarshalKey("cache.memcached", &testConfig); err != nil {
 		panic(err)
 	}
 }

@@ -2,8 +2,8 @@ package memcached
 
 import (
 	"errors"
-	"farm.e-pedion.com/repo/cache"
-	"farm.e-pedion.com/repo/logger"
+	"github.com/rjansen/boost"
+	"github.com/rjansen/l"
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
 )
@@ -40,7 +40,7 @@ func Setup(config *Configuration) error {
 	pool := &Pool{
 		client: NewClient(),
 	}
-	if err := cache.Setup(pool); err != nil {
+	if err := boost.Setup(pool); err != nil {
 		return err
 	}
 	return nil
@@ -59,16 +59,16 @@ func (c Pool) String() string {
 }
 
 //Get creates and returns a Client reference
-func (c *Pool) Get() (cache.Client, error) {
+func (c *Pool) Get() (boost.Client, error) {
 	if c == nil || c.client == nil {
 		return nil, errors.New("SetupMustCalled: Message='You must call Setup with a memcached.Configuration before get a Pool reference')")
 	}
 	// if c.client.Closed() {
 	// 	return nil, fmt.Errorf("cassandra.SessionIsClosedErr")
 	// }
-	logger.Debug("memcached.Get",
-		logger.String("Pool", c.String()),
-		logger.Bool("ClientIsNil", c.client == nil),
+	l.Debug("memcached.Get",
+		l.String("Pool", c.String()),
+		l.Bool("ClientIsNil", c.client == nil),
 	)
 	return c.client, nil
 }
@@ -78,8 +78,8 @@ func (c *Pool) Close() error {
 	if c == nil || c.client == nil {
 		return errors.New("SetupMustCalled: Message='You must call Setup with a CassandraBConfig before get a Cassandrapool reference')")
 	}
-	logger.Info("CloseMemcacheClient",
-		logger.String("MemcachedPool", c.String()),
+	l.Info("CloseMemcacheClient",
+		l.String("MemcachedPool", c.String()),
 	)
 	c.client.Close()
 	return nil

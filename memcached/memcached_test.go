@@ -2,9 +2,9 @@ package memcached
 
 import (
 	"errors"
-	"farm.e-pedion.com/repo/cache"
-	"farm.e-pedion.com/repo/logger"
 	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/rjansen/boost"
+	"github.com/rjansen/l"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	if err := logger.Setup(&logger.Configuration{}); err != nil {
+	if err := l.Setup(&l.Configuration{}); err != nil {
 		panic(err)
 	}
 	testConfig = &Configuration{
@@ -70,7 +70,7 @@ func TestPoolGetClient(t *testing.T) {
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
 	}
-	pool, err := cache.GetPool()
+	pool, err := boost.GetPool()
 	assert.Nil(t, err)
 	assert.NotNil(t, pool)
 	client, err := pool.Get()
