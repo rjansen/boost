@@ -29,7 +29,7 @@ type Configuration struct {
 }
 
 func (c Configuration) String() string {
-	return fmt.Sprintf("cache.Configuration Provider=%s", c.Provider)
+	return fmt.Sprintf("boost.Configuration Provider=%s", c.Provider)
 }
 
 //ClientPool is an interface for cache pool contract
