@@ -104,6 +104,6 @@ func Execute(cliFunc ClientFunc) error {
 	if err != nil {
 		return err
 	}
-	defer cacheClient.Close()
+	// defer cacheClient.Close()
 	return cliFunc(cacheClient)
 }
