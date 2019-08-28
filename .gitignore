@@ -1,6 +1,6 @@
 .DS_Store
 
 boost*coverage*
-vendor/*/
+vendor/
 *.pprof
 *.test
