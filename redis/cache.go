@@ -1,97 +1,113 @@
 package memcached
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/go-redis/redis"
 	"github.com/rjansen/boost"
 	"github.com/rjansen/l"
-	"time"
 )
 
 var (
-	//Config holds all package parameters instance
-	Config             *Configuration
-	ErrSetupMustCalled = errors.New("SetupMustCalled: Message='You must call Setup with a redis.Configuration before get a Pool reference'")
+	ErrKeyAlreadyExists = errors.New("ErrKeyAlreadyExists{Message='The provided key was already setted'}")
 )
-
-//Configuration holds cache connections parameters
-type Configuration struct {
-	URL      string `json:"url" mapstructure:"url"`
-	Password string
-	DB       int
-}
-
-func (c Configuration) String() string {
-	return fmt.Sprintf("redis.Configuration URL=%v", c.URL)
-}
-
-//Cache is the interface interact with the memcached
-type Cache interface {
-	//Ping validate the cache connection
-	Ping() *redis.StatusCmd
-	//Get reads the value associated with the provided key
-	Get(string) *redis.StringCmd
-	//SetNX inserts a new item in the cache, Add throws error if the provided key was already defined
-	SetNX(string, interface{}, time.Duration) *redis.BoolCmd
-	//Set inserts a new item in the cache if the key is new or modifies the value associated with the provided key
-	Set(string, interface{}, time.Duration) *redis.StatusCmd
-	//Del removes the item associated with the provided keys
-	Del(...string) *redis.IntCmd
-	//Close releases all resources and terminate this client
-	Close() error
-}
-
-//Setup configures the memcached cache implementor package
-func Setup(config *Configuration) error {
-	Config = config
-	//Config.Password = ""
-	//Config.Addrs = []string{"", "", ""}
-	//Config.DB = 0
-	pool := &Pool{
-		client: NewClient(),
-	}
-	if err := boost.Setup(pool); err != nil {
-		return err
-	}
-	return nil
-}
 
 //Pool controls how new gocql.Session will create and maintained
 type Pool struct {
+	config Configuration
 	client *Client
 }
 
+func NewPool(config Configuration) *Pool {
+	return &Pool{
+		config: config,
+		client: NewClient(config),
+	}
+}
+
 func (c Pool) String() string {
-	return fmt.Sprintf("RedisPool Configuration=%s ClientIsNil=%t",
-		Config.String(),
-		c.client == nil,
+	return fmt.Sprintf("redis.Pool{config=%s client=%t}",
+		c.config.String(), c.client == nil,
 	)
 }
 
 //Get creates and returns a Client reference
 func (c *Pool) Get() (boost.Client, error) {
-	if c == nil || c.client == nil {
-		return nil, ErrSetupMustCalled
-	}
-	// if c.client.Closed() {
-	// 	return nil, fmt.Errorf("cassandra.SessionIsClosedErr")
-	// }
-	l.Debug("redis.Get",
-		l.String("Pool", c.String()),
-		l.Bool("ClientIsNil", c.client == nil),
+	l.Debug(context.Background(), "redis.Get",
+		l.NewValue("Pool", c.String()),
+		l.NewValue("ClientIsNil", c.client == nil),
 	)
 	return c.client, nil
 }
 
 //Close close the database pool
 func (c *Pool) Close() error {
-	if c == nil || c.client == nil {
-		return ErrSetupMustCalled
-	}
-	l.Info("redis.Close",
-		l.String("RedisPool", c.String()),
+	l.Info(context.Background(), "redis.Close",
+		l.NewValue("RedisPool", c.String()),
 	)
 	c.client.Close()
 	return nil
+}
+
+//NewClient creates a new instance of the cache client component
+func NewClient(config Configuration) *Client {
+	return &Client{
+		config: config,
+		cache: redis.NewClient(
+			&redis.Options{
+				Addr:     config.URL,
+				Password: config.Password,
+				DB:       0, // use default DB
+			},
+		),
+	}
+}
+
+//Client is a component to interact with a cache system
+type Client struct {
+	config Configuration
+	cache  Cache
+}
+
+//Get reads the value associated with the provided key
+func (c Client) Get(key string) ([]byte, error) {
+	b, err := c.cache.Get(key).Bytes()
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+//Add inserts a new item in the cache, Add throws error if the provided key was already defined
+func (c Client) Add(key string, expires time.Duration, item []byte) error {
+	/*
+		_, err := c.Get(key)
+		if err != nil {
+			if err == redis.KeyNotFound {
+				return ErrAlreadyExists
+			}
+
+			return err
+		}
+	*/
+
+	return c.cache.SetNX(key, item, expires).Err()
+}
+
+//Set inserts a new item in the cache if the key is new or modifies the value associated with the provided key
+func (c Client) Set(key string, expires time.Duration, item []byte) error {
+	return c.cache.Set(key, item, expires).Err()
+}
+
+//Delete removes the item associated with the provided key
+func (c Client) Delete(key string) error {
+	return c.cache.Del(key).Err()
+}
+
+//Close terminates the memcached connection
+func (c Client) Close() error {
+	return c.cache.Close()
 }

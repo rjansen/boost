@@ -2,57 +2,28 @@ package memcached
 
 import (
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/go-redis/redis"
-	"github.com/rjansen/boost"
-	"github.com/rjansen/l"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 var (
 	cacheClient = new(Client)
 	redisClient *CacheMock
-	setted      = false
 	key1        = "8b06603b-9b0d-4e8c-8aae-10f988639fe6"
-	expires     = 60
-	testConfig  *Configuration
-)
-
-func init() {
-	if err := l.Setup(&l.Configuration{}); err != nil {
-		panic(err)
-	}
-	testConfig = &Configuration{
+	expires     = time.Second * 60
+	testConfig  = &Configuration{
 		URL: "mock://cache",
 	}
-}
-
-func setup() error {
-	setupErr := Setup(testConfig)
-	if setupErr != nil {
-		setted = true
-	}
-	return setupErr
-}
+)
 
 func before() error {
-	if !setted {
-		if err := setup(); err != nil {
-			return err
-		}
-	}
 	redisClient = NewCacheMock()
 	cacheClient.cache = redisClient
 	return nil
-}
-
-func TestNewClientPanic(t *testing.T) {
-	assert.Panics(t,
-		func() {
-			NewClient()
-		},
-	)
 }
 
 func TestNewClient(t *testing.T) {
@@ -61,7 +32,7 @@ func TestNewClient(t *testing.T) {
 	}
 	assert.NotPanics(t,
 		func() {
-			NewClient()
+			NewClient(*testConfig)
 		},
 	)
 }
@@ -70,8 +41,7 @@ func TestPoolGetClient(t *testing.T) {
 	if beforeErr := before(); beforeErr != nil {
 		assert.Fail(t, beforeErr.Error())
 	}
-	pool, err := boost.GetPool()
-	assert.Nil(t, err)
+	pool := NewPool(*testConfig)
 	assert.NotNil(t, pool)
 	client, err := pool.Get()
 	assert.Nil(t, err)
