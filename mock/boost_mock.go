@@ -1,6 +1,9 @@
 package boost
 
 import (
+	"time"
+
+	"github.com/rjansen/boost"
 	testify "github.com/stretchr/testify/mock"
 )
 
@@ -14,11 +17,11 @@ type ClientPoolMock struct {
 }
 
 //Get returns a cache Client instance
-func (m *ClientPoolMock) Get() (Client, error) {
+func (m *ClientPoolMock) Get() (boost.Client, error) {
 	args := m.Called()
 	result := args.Get(0)
 	if result != nil {
-		return result.(Client), args.Error(1)
+		return result.(boost.Client), args.Error(1)
 	}
 	return nil, args.Error(1)
 }
@@ -50,13 +53,13 @@ func (m *ClientMock) Get(key string) ([]byte, error) {
 }
 
 //Add inserts a new item in the cache, Add throws error if the provided key was already defined
-func (m *ClientMock) Add(key string, expires int, item []byte) error {
+func (m *ClientMock) Add(key string, expires time.Duration, item []byte) error {
 	args := m.Called(key, expires, []byte(item))
 	return args.Error(0)
 }
 
 //Set inserts a new item in the cache if the key is new or modifies the value associated with the provided key
-func (m *ClientMock) Set(key string, expires int, item []byte) error {
+func (m *ClientMock) Set(key string, expires time.Duration, item []byte) error {
 	args := m.Called(key, expires, []byte(item))
 	return args.Error(0)
 }

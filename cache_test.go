@@ -1,116 +1,43 @@
 package boost
 
 import (
-	"context"
-	"errors"
-	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestGetPoolErr(t *testing.T) {
-	pool, err := GetPool()
-	assert.NotNil(t, err)
-	assert.Nil(t, pool)
-}
+type clientPoolMock struct{}
 
-func TestSetupErr(t *testing.T) {
-	err := Setup(nil)
-	assert.NotNil(t, err)
-}
+func (c *clientPoolMock) Get() (Client, error) { return nil, nil }
 
-func TestSetupSuccess(t *testing.T) {
-	mockClient := NewClientMock()
-	mockClient.On("Close").Return(nil)
-	mockPool := NewClientPoolMock()
-	mockPool.On("Get").Return(mockClient, nil)
-	mockPool.On("Close").Return(nil)
-	err := Setup(mockPool)
-	assert.Nil(t, err)
-}
+func (c *clientPoolMock) Close() error { return nil }
 
-func TestGetPool(t *testing.T) {
-	pool, err := GetPool()
-	assert.Nil(t, err)
+func TestClientPool(t *testing.T) {
+	pool := new(clientPoolMock)
 	assert.NotNil(t, pool)
+	assert.Implements(t, (*ClientPool)(nil), pool)
 }
 
-func TestConfiguration(t *testing.T) {
-	provider := "mockProvider"
-	cfg := &Configuration{
-		Provider: provider,
-	}
-	cfgStr := cfg.String()
-	assert.Contains(t, cfgStr, provider)
-}
+type clientMock struct{}
 
-func TestSetGetClientOnContext(t *testing.T) {
-	c := context.Background()
-	c, err := SetClient(c)
-	assert.Nil(t, err)
-	assert.NotZero(t, c)
+//Get reads the value associated with the provided key
+func (c *clientMock) Get(key string) ([]byte, error) { return nil, nil }
 
-	client, err := GetClient(c)
-	assert.Nil(t, err)
-	assert.NotZero(t, client)
-}
+//Add inserts a new item in the cache, Add throws error if the provided key was already defined
+func (c *clientMock) Add(key string, expires time.Duration, item []byte) error { return nil }
 
-func TestSetGetClientOnContextErr(t *testing.T) {
-	c, err := SetClient(nil)
-	assert.NotNil(t, err)
-	assert.Zero(t, c)
+//Set inserts a new item in the cache if the key is new or modifies the value associated with the provided key
+func (c *clientMock) Set(key string, expires time.Duration, item []byte) error { return nil }
 
-	client, err := GetClient(c)
-	assert.NotNil(t, err)
-	assert.Zero(t, client)
+//Delete removes the item associated with the provided key
+func (c *clientMock) Delete(key string) error { return nil }
 
-	c = context.Background()
-	client, err = GetClient(c)
-	assert.NotNil(t, err)
-	assert.Zero(t, client)
-}
+//Close closes the client connection
+func (c *clientMock) Close() error { return nil }
 
-func TestExecuteContext(t *testing.T) {
-	err := ExecuteContext(
-		func(c context.Context) error {
-			assert.NotNil(t, c)
-			client, err := GetClient(c)
-			assert.Nil(t, err)
-			assert.NotNil(t, client)
-			return nil
-		},
-	)
-	assert.Nil(t, err)
-}
-
-func TestExecuteContextErr(t *testing.T) {
-	err := ExecuteContext(
-		func(c context.Context) error {
-			assert.NotNil(t, c)
-			client, err := GetClient(c)
-			assert.Nil(t, err)
-			assert.NotNil(t, client)
-			return errors.New("MockExecuteContextErr")
-		},
-	)
-	assert.NotNil(t, err)
-}
-
-func TestExecute(t *testing.T) {
-	err := Execute(
-		func(c Client) error {
-			assert.NotNil(t, c)
-			return nil
-		},
-	)
-	assert.Nil(t, err)
-}
-
-func TestExecuteClientErr(t *testing.T) {
-	err := Execute(
-		func(c Client) error {
-			assert.NotNil(t, c)
-			return errors.New("MockExecuteErr")
-		},
-	)
-	assert.NotNil(t, err)
+func TestClient(t *testing.T) {
+	client := new(clientMock)
+	assert.NotNil(t, client)
+	assert.Implements(t, (*Client)(nil), client)
 }
